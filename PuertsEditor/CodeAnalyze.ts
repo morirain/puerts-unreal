@@ -1601,12 +1601,16 @@ function watch(configFilePath:string) {
             if (!(fileName in restoredFileVersions) || restoredFileVersions[fileName].version != fileVersions[fileName].version || !restoredFileVersions[fileName].processed) {
                 onSourceFileAddOrChange(fileName, false, program, true, false);
                 changed = true;
+            } else {
+                fileVersions[fileName].processed = true;
             }
         });
         fileNames.forEach(fileName => {
             if (!(fileName in restoredFileVersions) || restoredFileVersions[fileName].version != fileVersions[fileName].version || !restoredFileVersions[fileName].processed) {
                 onSourceFileAddOrChange(fileName, false, program, false);
                 changed = true;
+            } else {
+                fileVersions[fileName].processed = true;
             }
         });
         if (changed) {
@@ -3894,10 +3898,12 @@ function watch(configFilePath:string) {
                     let moduleBody: ts.ModuleBody = type.symbol.valueDeclaration.parent;
 
                     while(moduleBody) {
-                        let moduleDeclaration = moduleBody.parent;
+                        let moduleDeclaration:ts.ModuleDeclaration = moduleBody.parent;
                         let nameOfModule:string = undefined;
                         while(moduleDeclaration) {
-                            nameOfModule = nameOfModule ? (moduleDeclaration.name.text + '/' + nameOfModule) : moduleDeclaration.name.text;
+                            let ns = moduleDeclaration.name.text;
+                            ns = ns.startsWith("$") ? ns.substring(1) : ns;
+                            nameOfModule = nameOfModule ? (ns + '/' + nameOfModule) : ns;
                             if (ts.isModuleDeclaration(moduleDeclaration.parent)) {
                                 moduleDeclaration = moduleDeclaration.parent;
                             } else {
